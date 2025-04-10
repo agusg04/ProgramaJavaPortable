@@ -1,0 +1,40 @@
+Para poder ejecutar un programa de java en cualquier ordenador sin tener que instalar java
+Hay que escribir el programa, meter las dependencias por maven, meter este plugin en maven para que se metan
+las dependencias del maven dentro del jar (fat jar)
+<build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>taller.Main</mainClass>
+                                </transformer>
+                            </transformers>
+                            <minimizeJar>true</minimizeJar>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+Generar un jre solo con las dependencias que usamos para ello usar el comando jdeps con el jar
+jdeps -s path/a/tuArchivo.jar hay mas banderas pero me da pereza buscarlas
+Luego con el jlink generar el jre con solo las dependencias que vamos a usar
+jlink --module-path $JAVA_HOME/jmods \
+      --add-modules java.base,java.sql \
+      --output jre-personalizada
+Luego el jpackage para generar el paquete(Esto no sirve, te hace una carpeta con lo necesario pero
+yo quiero un ejecutable portable)
+C:\Users\agtsa\IdeaProjects\CalcularIngresos>jpackage --name CalcularIngresos --input out\artifacts\CalcularIngresos_jar --main-jar CalcularIngresos.jar --main-class taller.Main --runtime-image dist\jre --type app-image --dest exe
+Al final uso warp-packer esta en GitHub y sirve para empaquetar el jre y todo en un .exe de verdad
+windows-x64.warp-packer.exe --arch windows-x64 --input_dir bundle --exec run.bat --output CalcularIngresos.exe
+Debe de pesar más o menos como el jre generado más nuestro código
